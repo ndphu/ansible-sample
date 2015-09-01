@@ -1,0 +1,4 @@
+jre: 7u79
+tomcat: 8.0.24
+auto_start: True
+

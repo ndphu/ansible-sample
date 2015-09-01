@@ -1,0 +1,11 @@
+# Data source
+spring.datasource.url=jdbc:mysql://{{ db_host }}:{{ hostvars.docker1.db_container_dynamic_port.stdout }}/taskmanager
+
+# Replace with your credentials
+spring.datasource.username={{ db_login_user }}
+spring.datasource.password={{ db_login_password }}
+
+spring.datasource.driverClassName=com.mysql.jdbc.Driver
+
+# Web port
+server.port={{ web_port }}

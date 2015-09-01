@@ -1,0 +1,68 @@
+---
+ - hosts: dev1
+   vars:
+    - tomcat_version: 7.0.63
+    - tomcat_home: /opt/tomcat7
+    - tomcat_bin: "{{ tomcat_home }}/bin"
+    - webapps: /opt/tomcat7/webapps
+    - war_path: "{{ webapps }}/website.war"
+    - war_input_file: files/app/website-1.0.war
+    - startup: "{{ tomcat_bin }}/startup.sh"
+    - shutdown: "{{ tomcat_bin }}/shutdown.sh"
+
+   remote_user: ndphu
+   sudo: yes
+
+   tasks:
+    - name: Install JRE
+      apt: 
+        name: openjdk-7-jre
+    
+    - stat:
+        path: /opt/tomcat7
+      register: tomcat7
+
+    - name: Cleanup
+      command: rm -rf /opt/tomcat7
+      when: tomcat7.stat.exists == true
+      register: tomcatCleanup
+
+    - name: Unpack tomcat
+      unarchive:
+        src: files/tomcat/apache-tomcat-{{ tomcat_version }}.tar.gz
+        dest: /opt/
+      when: tomcatCleanup|success
+      register: tomcatUnpacked
+
+    - name: Rename tomcat dir
+      command: mv /opt/apache-tomcat-{{ tomcat_version }} /opt/tomcat7
+      when: tomcatUnpacked|success
+      register: tomcatOK
+
+    - name: Copy app war
+      copy:
+        src: "{{ war_input_file }}"
+        dest: "{{ war_path }}"
+
+    - name: Install unzip
+      apt: name=unzip state=present
+
+    - name: Create app dir
+      file:
+        state: directory
+        owner: ndphu
+        path: "{{ webapps }}/website"
+
+    - name: Uzip war
+      command: unzip "{{ war_path }}" -d "{{ webapps }}/website"
+      
+
+    - name: Remove war
+      file:
+        path: "{{ war_path }}"
+        state: absent
+        force: true
+    
+    - name: Start Tomcat
+      command: "{{ startup }}"
+

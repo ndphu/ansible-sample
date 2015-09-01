@@ -1,0 +1,35 @@
+    server {
+        listen 443;
+        server_name {{ server_name }};
+
+        ssl on;
+        ssl_certificate /etc/ssl/certs/{{ server_name }}.crt;
+        ssl_certificate_key /etc/ssl/private/{{ server_name }}.key;
+
+        access_log /var/log/nginx/{{ server_name }}.log;
+        error_log /var/log/nginx/{{ server_name }}.error.log;
+
+        proxy_set_header Host $host;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header X-Original-URI $request_uri;
+        proxy_read_timeout 900;
+
+        client_max_body_size 0; # disable any limits to avoid HTTP 413 for large image uploads
+
+        # required to avoid HTTP 411: see Issue #1486 (https://github.com/docker/docker/issues/1486)
+        chunked_transfer_encoding on;
+
+        location /v2 {
+            add_header 'Docker-Distribution-Api-Version:' 'registry/2.0';
+            # Do not allow connections from docker 1.5 and earlier
+            # docker pre-1.6.0 did not properly set the user agent on ping, catch "Go *" user agents
+            if ($http_user_agent ~ "^(docker\/1\.(3|4|5(?!\.[0-9]-dev))|Go ).*$" ) {
+                return 404;
+            }
+
+            proxy_pass http://{{ artifactory_host }}:{{ artifactory_port }}/artifactory/api/docker/{{ repo_key }}/v2;
+        }
+    }
+

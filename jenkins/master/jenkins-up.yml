@@ -1,0 +1,59 @@
+#!/usr/bin/env ansible-playbook
+
+ - name: Deploy jenkins using init-script to handle start/stop
+   hosts: jenkins_server
+   vars_files:
+    - conf.yml
+   vars:
+     home_dir: /home/jenkins
+   tasks:
+    - name: Create jenkins user
+      user: name=jenkins comment="Jenkins user"
+      notify: restart jenkins
+
+    - name: Extract JRE
+      unarchive: src=files/jre-{{ jre }}-linux-x64.gz dest={{ home_dir }}
+      notify: restart jenkins
+
+    - name: Create link for JRE
+      file: src={{ home_dir }}/jre1.7.0_79 dest={{ home_dir }}/jre state=link owner=jenkins
+      notify: restart jenkins
+
+    - name: Extract Tomcat
+      unarchive: src=files/apache-tomcat-{{ tomcat }}.tar.gz dest={{ home_dir }} owner=jenkins
+      notify: restart jenkins
+
+    - name: Set owner for tomcat dir to Jenkins
+      file: path={{ home_dir }}/apache-tomcat-{{ tomcat }} owner=jenkins recurse=yes
+
+    - name: Craete link for Tomcat
+      file: src={{ home_dir }}/apache-tomcat-{{ tomcat }} dest={{ home_dir }}/tomcat state=link owner=jenkins
+      notify: restart jenkins
+
+    - name: Copy jenkins package
+      copy: src=files/jenkins.war dest={{ home_dir }}/tomcat/webapps/ owner=jenkins
+      notify: restart jenkins
+
+    - name: Create JENKINS_HOME at /home/jenkins/jenkins-home
+      file: path={{ home_dir }}/jenkins-home state=directory owner=jenkins
+      notify: restart jenkins
+
+    - name: Copy init script
+      copy: src=jenkins-init-script dest=/etc/init.d/jenkins
+      notify: restart jenkins
+
+    - name: Change permission
+      file: path=/etc/init.d/jenkins mode="u=rwx,g=rx,o=rx"
+      notify: restart jenkins
+   
+    - name: Set jenkins startup auto
+      service: name=jenkins enabled=yes
+      when: auto_start
+
+   handlers:
+    - name: restart jenkins
+      service: name=jenkins state=restarted
+
+
+
+

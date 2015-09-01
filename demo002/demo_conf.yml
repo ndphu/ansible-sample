@@ -1,0 +1,5 @@
+db_host: 192.168.55.147
+db_login_user: root
+db_login_password: root
+web_port: 12300
+ssh_port: 22

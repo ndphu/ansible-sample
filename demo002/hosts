@@ -1,0 +1,7 @@
+docker1 ansible_ssh_host=192.168.55.147 ansible_ssh_port=22
+docker2 ansible_ssh_host=192.168.78.121 ansible_ssh_port=22
+docker3 ansible_ssh_host=192.168.78.59 ansible_ssh_port=22
+local ansible_ssh_host=127.0.0.1 ansible_ssh_port=22
+web_container ansible_ssh_host=web2 ansible_ssh_port=22
+
+

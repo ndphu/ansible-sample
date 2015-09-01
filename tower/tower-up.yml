@@ -1,0 +1,26 @@
+---
+ - hosts: tower
+   remote_user: ndphu
+   sudo: yes
+   tasks:
+    - name: Restart Redis Server
+      service: name=redis-server state=restarted
+   
+    - name: Start supervisor
+      service: name=supervisor state=started
+
+    - name: Reload supervisor
+      command: supervisorctl reload
+
+    - name: Restart munin-node
+      service: name=munin-node state=restarted
+    
+    - name: Restart ssh
+      service: name=ssh state=restarted
+    
+    - name: Restart postgresql
+      service: name=postgresql state=restarted
+
+    - name: Restart Apache 2
+      service: name=apache2 state=restarted
+

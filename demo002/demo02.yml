@@ -1,0 +1,95 @@
+---
+ - name: Demo 002
+   hosts: docker1
+   vars_files:
+    - demo_conf.yml
+   tasks:
+    - name: Start mysql container
+      docker:
+        name: demo_mysql1
+        image: mysql
+        state: running
+        expose:
+         - "3306"
+        ports:
+         - "3306"
+        env:
+          MYSQL_ROOT_PASSWORD="{{ db_login_password }}"
+
+    - name: Get mysql host
+      shell: docker inspect --format {{.NetworkSettings.IPAddress}} demo_mysql1
+      register: db_container_ip
+
+
+    - name: Get dynamic port
+      shell: docker port demo_mysql1 | cut -d':' -f2
+      register: db_container_dynamic_port
+
+    - name: Print container IP Address
+      debug: var=db_container_ip.stdout
+
+    - name: Print container Dynamic port
+      debug: var=db_container_dynamic_port.stdout
+
+    - name: Copy schema script
+      copy: src=init-db.sql dest=/tmp
+
+    - name: Create DB
+      mysql_db: 
+        name: taskmanager 
+        state: present
+        login_host: "{{ db_container_ip.stdout }}"
+        login_user: "{{ db_login_user }}"
+        login_password: "{{ db_login_password }}"
+
+    - name: Init db
+      mysql_db: 
+        login_host: "{{ db_container_ip.stdout }}"
+        login_user: "{{ db_login_user }}"
+        login_password: "{{ db_login_password }}"
+        state: import
+        name: taskmanager
+        target: /tmp/init-db.sql
+      
+      
+ - hosts: web_container
+   name: Local docker host
+   remote_user: ndphu
+   sudo: yes
+   vars_files:
+    - demo_conf.yml
+   tasks:
+    - name: Create jdk
+      file: name=/opt/jre7 state=directory
+
+
+    - name: Extract JRE7
+      unarchive:
+        src: app/jre7.gz
+        dest: /opt/jre7
+
+    - name: Kill the previous app instance
+      shell: ps -e | grep java | awk 'BEGIN{FS=" +"}{print $2}' | while read pid; do kill -9 $pid; done
+
+    - name: Create app dir
+      file: name=/opt/app state=directory
+
+    - name: Copy app
+      copy:
+        src: app/webapp.jar
+        dest: /opt/app
+
+    - name: Create config dir
+      file: name=/opt/app/conf state=directory
+
+
+    - name: Copy template config file
+      template:
+        src: app/conf/application.properties.j2
+        dest: /opt/app/conf/application.properties
+
+
+    - name: Start the app
+      shell: cd /opt/app && nohup /opt/jre7/jre1.7.0_79/bin/java -jar /opt/app/webapp.jar &
+
+

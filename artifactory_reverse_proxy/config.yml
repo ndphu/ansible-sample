@@ -1,0 +1,9 @@
+# Config for reverse proxy machine
+reverse_proxy_ssh_host: docker_443_proxy
+reverse_proxy_ssh_port: 22
+
+# Config for nginx 
+server_name: nginx-reverse-proxy
+repo_key: docker-local
+artifactory_host: 192.168.85.192
+artifactory_port: 18081

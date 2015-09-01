@@ -1,0 +1,64 @@
+---
+ - hosts: redis
+   remote_user: ndphu
+   tasks:
+    - name: Install Redis
+      apt:
+        name: redis-server
+        state: present
+      sudo: yes
+
+    - name: Copy config file
+      sudo: yes
+      copy:
+        src: files/redis/redis.conf
+        dest: /etc/redis/redis.conf
+        owner: redis
+
+    - name: Restart redis-server
+      sudo: yes
+      service:
+        name: redis-server
+        state: restarted
+
+
+ - hosts: webservice
+   vars:
+    - tomcat_version: 7.0.63
+   remote_user: ndphu
+   sudo: yes
+   tasks:
+    - stat:
+        path: /opt/tomcat7
+      register: tomcat7
+
+    - debug:
+        var: tomcat7
+
+
+    - name: Cleanup
+      file:
+        path: /opt/tomcat*
+        state: absent
+        force: true
+      when: tomcat7.stat.isdir == false
+
+    - name: Unpack tomcat
+      unarchive:
+        src: files/tomcat/apache-tomcat-{{ tomcat_version }}.tar.gz
+        dest: /opt/
+      when: tomcat7 is not defined && not tomcat7.stat.isdir
+      register: tomcatUnpacked
+   
+    - name: Rename tomcat dir
+      command: mv /opt/apache-tomcat-{{ tomcat_version }} /opt/tomcat7
+      when: tomcatUnpacked|success
+      register: tomcatOK
+   
+
+    - name: Deploy app
+      unarchive:
+        src: files/app/website-1.0.war
+        dest: /opt/tomcat7/webapps/wservice
+      
+      
