@@ -1,0 +1,33 @@
+vm1 ansible_ssh_host=docker_vm_1 
+vm2 ansible_ssh_host=docker_vm_2
+vm3 ansible_ssh_host=docker_vm_3
+
+[web]
+vm1
+
+[task]
+vm2
+
+[db]
+vm3
+
+[rabbitmq]
+vm3
+
+[django:children]
+web
+task
+
+[all:vars]
+ntp_server=ntp.ubuntu.com
+
+[tutorial:vars]
+db_primary_host=vm3
+db_primary_port=5432
+db_name=widget_vargant
+db_user=widgetuser
+db_password=password
+rabbitmq_host=vm3
+rabbitmq_port=5672
+
+
