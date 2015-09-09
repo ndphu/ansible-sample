@@ -27,10 +27,20 @@ def get_host_details(host):
             'ansible_ssh_user': 'root'}
 
 
+def get_docker_vm_list():
+    client = get_docker_client()
+    info = {'docker_vm': []}
+    for container in client.containers():
+        if container['Image'] == 'ndphu/ubuntu-ssh':
+            info['docker_vm'].append(container['Names'][0][1:])
+    return info
+
+
 def main():
     args = parse_args()
     if args.list:
-        print 'Show list'
+        details = get_docker_vm_list()
+        json.dump(details, sys.stdout)
     else:
         details = get_host_details(args.host)
         json.dump(details, sys.stdout)
@@ -38,5 +48,4 @@ def main():
 
 if __name__ == '__main__':
     main()
-
 
