@@ -9,8 +9,8 @@
 # pidfile: /home/jenkins/jenkins-tomcat.pid
 
 # Set Tomcat environment.
-# Tomcat version: apache-tomcat-8.0.24
-# JRE version: jre1.7.0_79
+# Tomcat version: apache-tomcat-8.0.26
+# JRE version: jre1.8.0_60
 
 JENKINS_USER=jenkins
 LOCKFILE=/var/lock/jenkins
@@ -20,7 +20,7 @@ export JAVA_HOME=/home/jenkins/jre
 export JENKINS_BASEDIR=/home/jenkins
 export TOMCAT_HOME=$JENKINS_BASEDIR/tomcat
 export CATALINA_PID=$JENKINS_BASEDIR/jenkins-tomcat.pid
-export CATALINA_OPTS="-DJENKINS_HOME=$JENKINS_BASEDIR/jenkins-home -Xmx512m -Djava.awt.headless=true"
+export CATALINA_OPTS="-DJENKINS_HOME=$JENKINS_BASEDIR/jenkins_home -Xmx512m -Djava.awt.headless=true"
 
 # Source function library.
 #. /etc/rc.d/init.d/functions

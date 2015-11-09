@@ -1,3 +1,1 @@
-jenkins_server ansible_ssh_host=127.0.0.1 ansible_ssh_port=22
-
-
+jenkins_server ansible_ssh_host=172.27.120.100 ansible_ssh_port=22080

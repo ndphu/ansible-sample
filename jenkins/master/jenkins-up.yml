@@ -16,7 +16,7 @@
       notify: restart jenkins
 
     - name: Create link for JRE
-      file: src={{ home_dir }}/jre1.7.0_79 dest={{ home_dir }}/jre state=link owner=jenkins
+      file: src={{ home_dir }}/jre1.8.0_60 dest={{ home_dir }}/jre state=link owner=jenkins
       notify: restart jenkins
 
     - name: Extract Tomcat
@@ -34,7 +34,7 @@
       copy: src=files/jenkins.war dest={{ home_dir }}/tomcat/webapps/ owner=jenkins
       notify: restart jenkins
 
-    - name: Create JENKINS_HOME at /home/jenkins/jenkins-home
+    - name: Create JENKINS_HOME at /home/jenkins/jenkins_home
       file: path={{ home_dir }}/jenkins-home state=directory owner=jenkins
       notify: restart jenkins
 
